@@ -1,15 +1,21 @@
 import os
-from langchain.document_loaders import TextLoader
+import glob
+from langchain.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Weaviate  
+from langchain.vectorstores import Weaviate
 from langchain.embeddings import OpenAIEmbeddings
 import wolframalpha
 
-def ingest(path="data/*.txt"):
-    loader = TextLoader(path)
-    docs = loader.load()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, overlap=200)
-    chunks = splitter.split_documents(docs)
+def ingest(path="data/*.pdf"):
+    all_docs = []
+    for pdf_path in glob.glob(path):
+        loader = PyMuPDFLoader(pdf_path)
+        docs = loader.load()
+        all_docs.extend(docs)
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.split_documents(all_docs)
+
     embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("GOOGLE_API_KEY"))
     vectordb = Weaviate.from_documents(chunks, embeddings, url=os.getenv("RAG_VECTOR_DB_URL"))
     return vectordb
