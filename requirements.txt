@@ -1,0 +1,6 @@
+google-adk>=0.1.0
+google-genai>=1.0.0
+langchain>=0.0.1             # RAG ingestion
+weaviate-client              # or pinecone, redis‑ai
+wolframalpha
+python-dotenv
